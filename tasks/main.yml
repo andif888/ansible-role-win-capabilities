@@ -1,0 +1,114 @@
+---
+# tasks file for ansible-role-win-capabilities
+- name: Ensure {{ win_capability_download_dir }} exists
+  ansible.windows.win_file:
+    path: "{{ win_capability_download_dir }}"
+    state: directory
+
+- name: Download {{ win_capability_iso_url }}
+  ansible.windows.win_get_url:
+    follow_redirects: "{{ win_capability_follow_redirects | default(omit) }}"
+    force: "{{ win_capability_download_force | default(omit) }}"
+    dest: '{{ win_capability_download_dir }}\{{ win_capability_download_filename }}'
+    header: "{{ win_capability_download_headers | default(omit) }}"
+    url: "{{ win_capability_iso_url }}"
+    validate_certs: "{{ validate_certs | default(omit) }}"
+    proxy_password: "{{ proxy_password | default(omit) }}"
+    proxy_url: "{{ proxy_url | default(omit) }}"
+    proxy_use_default_credential: "{{ proxy_use_default_credential | default(omit) }}"
+    proxy_username: "{{ proxy_username | default(omit) }}"
+  register: download_result
+  when:
+    - win_capability_iso_url | length > 0
+
+- name: Mount ISO
+  community.windows.win_disk_image:
+    image_path: '{{ download_result.dest }}'
+    state: present
+  register: mount_result
+  when:
+    - download_result is defined
+    - download_result | length > 0
+    - download_result.dest is defined
+
+- name: Debug mount_path
+  ansible.builtin.debug: 
+    msg: '{{ mount_result.mount_paths[0] ~ win_capability_iso_relative_source_path }}'
+  when:
+    - mount_result is defined
+    - mount_result | length > 0
+    - mount_result.mount_paths is defined
+
+- name: Remove Windows Capability
+  ansible.windows.win_shell: |
+    Remove-WindowsCapability -Online -Name "{{ item }}"
+  loop: "{{ win_capability_delete_list }}"
+  register: uninstall_result
+  when:
+    - win_capability_delete_list is defined
+    - win_capability_delete_list | length > 0
+
+- name: Debug uninstall_result
+  ansible.builtin.debug:
+    var: uninstall_result
+  when:
+    - win_capability_delete_list is defined
+    - win_capability_delete_list | length > 0
+
+- name: Add Windows Capability
+  ansible.windows.win_shell: |
+    {% if (mount_result is defined and mount_result.mount_paths is defined) %}
+    Add-WindowsCapability -Online -Name "{{ item }}" -Source "{{ mount_result.mount_paths[0] ~ win_capability_iso_relative_source_path }}" -LimitAccess
+    {% else %}
+    Add-WindowsCapability -Online -Name "{{ item }}"
+    {% endif %}
+  loop: "{{ win_capability_add_list }}"
+  register: install_result
+  when:
+    - win_capability_add_list is defined
+    - win_capability_add_list | length > 0
+
+- name: Debug install_result
+  ansible.builtin.debug:
+    var: install_result
+  when:
+    - win_capability_add_list is defined
+    - win_capability_add_list | length > 0
+
+- name: Umount ISOs
+  community.windows.win_disk_image:
+    image_path: '{{ download_result.dest }}'
+    state: absent
+  when:
+    - mount_result is defined
+    - mount_result | length > 0
+    - mount_result.mount_paths is defined
+
+- name: Remove downloaded ISOs
+  ansible.windows.win_file:
+    path: '{{ download_result.dest }}'
+    state: absent
+  when:
+    - win_capability_isos_remove_when_finished == true
+    - download_result is defined
+    - download_result | length > 0
+    - download_result.dest is defined
+
+- name: Check Reboot required
+  ansible.windows.win_reg_stat:
+    path: '{{ item.path }}'
+    name: '{{ item.name | default(omit) }}'
+  loop:
+    - { path: 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' }
+    - { path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' }
+    - { path: 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager', name: 'PendingFileRenameOperations' }
+  register: reg_stat_result
+
+- name: Reboot if required
+  ansible.windows.win_reboot:
+    post_reboot_delay: "{{ win_capability_post_reboot_delay }}"
+    pre_reboot_delay: "{{ win_capability_pre_reboot_delay }}"
+  when:
+    - win_capability_reboot_when_required
+    - reg_stat_result.results | selectattr('exists', 'equalto', true)
+...

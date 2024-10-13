@@ -1,0 +1,97 @@
+---
+# defaults file for ansible-role-win-capabilities
+
+# @var win_capability_download_dir:description: Download directory for the ISO
+win_capability_download_dir: '{{ ansible_env.SystemRoot }}\temp\windows_isos'
+
+# @var win_capability_download_filename:description: Save as name of the downloaded file
+win_capability_download_filename: ""
+
+# @var win_capability_iso_url:description: >
+# URL to the Windows FoD ISO if installing offline  
+# 
+# General Info:  
+# https://learn.microsoft.com/en-us/azure/virtual-desktop/windows-11-language-packs
+#
+# Windows 10 FoD  
+# https://software-static.download.prss.microsoft.com/pr/download/19041.1.191206-1406.vb_release_amd64fre_FOD-PACKAGES_OEM_PT1_amd64fre_MULTI.iso
+# 
+# Windows 11 22h2 FoD  
+# https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/22621.1.220506-1250.ni_release_amd64fre_CLIENT_LOF_PACKAGES_OEM.iso
+#
+# Windows 11 24h2 FoD  
+# https://software-static.download.prss.microsoft.com/dbazure/888969d5-f34g-4e03-ac9d-1f9786c66749/26100.1.240331-1435.ge_release_amd64fre_CLIENT_LOF_PACKAGES_OEM.iso
+# @end
+win_capability_iso_url: ""
+# General: https://learn.microsoft.com/en-us/azure/virtual-desktop/windows-11-language-packs
+
+# @var win_capability_iso_relative_source_path:description: Relative path in the ISO where all the CAB files are stored
+win_capability_iso_relative_source_path: "LanguagesAndOptionalFeatures"
+
+
+# @var win_capability_delete_list:description: List of windows capabilities to uninstall
+# @var win_capability_delete_list:example: >
+# win_capability_delete_list:
+#   - "Browser.InternetExplorer~~~~0.0.11.0"
+# @end
+win_capability_delete_list: []
+# - "Browser.InternetExplorer~~~~0.0.11.0"
+
+# @var win_capability_add_list:description: List of windows capabilities to install
+# @var win_capability_add_list:example: >
+# win_capability_add_list:
+#   - "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+#   - "Rsat.BitLocker.Recovery.Tools~~~~0.0.1.0"
+#   - "Rsat.CertificateServices.Tools~~~~0.0.1.0"
+#   - "Rsat.DHCP.Tools~~~~0.0.1.0"
+#   - "Rsat.Dns.Tools~~~~0.0.1.0"
+#   - "Rsat.FailoverCluster.Management.Tools~~~~0.0.1.0"
+#   - "Rsat.FileServices.Tools~~~~0.0.1.0"
+#   - "Rsat.GroupPolicy.Management.Tools~~~~0.0.1.0"
+#   - "Rsat.IPAM.Client.Tools~~~~0.0.1.0"
+#   - "Rsat.LLDP.Tools~~~~0.0.1.0"
+#   - "Rsat.NetworkController.Tools~~~~0.0.1.0"
+#   - "Rsat.NetworkLoadBalancing.Tools~~~~0.0.1.0"
+#   - "Rsat.RemoteAccess.Management.Tools~~~~0.0.1.0"
+#   - "Rsat.RemoteDesktop.Services.Tools~~~~0.0.1.0"
+#   - "Rsat.ServerManager.Tools~~~~0.0.1.0"
+#   - "Rsat.StorageMigrationService.Management.Tools~~~~0.0.1.0"
+#   - "Rsat.StorageReplica.Tools~~~~0.0.1.0"
+#   - "Rsat.SystemInsights.Management.Tools~~~~0.0.1.0"
+#   - "Rsat.VolumeActivation.Tools~~~~0.0.1.0"
+#   - "Rsat.WSUS.Tools~~~~0.0.1.0"
+# @end
+win_capability_add_list: []
+
+# Other Windows Capabilities:
+# To find capability names run Get-WindowsCapability -Online powershell command in Windows
+# - "Language.Basic~~~de-DE~0.0.1.0"
+# - "Language.Handwriting~~~de-DE~0.0.1.0"
+# - "Language.OCR~~~de-DE~0.0.1.0"
+# - "Language.Speech~~~de-DE~0.0.1.0"
+# - "Language.TextToSpeech~~~de-DE~0.0.1.0"
+# - "NetFX3~~~~"
+# - "SNMP.Client~~~~0.0.1.0"
+# - "WMI-SNMP-Provider.Client~~~~0.0.1.0"
+
+# @var win_capability_isos_remove_when_finished:description: Delete ISO file after unmouted and ansible role is finished
+win_capability_isos_remove_when_finished: true
+
+# @var win_capability_reboot_when_required:description: Automatically reboot when a Windows feature requires it
+win_capability_reboot_when_required: true
+
+# @var win_capability_post_reboot_delay:description: Wait number of seconds after reboot to continue
+win_capability_post_reboot_delay: 30
+
+# @var win_capability_pre_reboot_delay:description: Wait number of seconds before rebooting
+win_capability_pre_reboot_delay: 5
+
+# win_capability_follow_redirects:
+# win_capability_download_force:
+# win_capability_download_headers:
+# validate_certs:
+# proxy_password:
+# proxy_url:
+# proxy_use_default_credential:
+# proxy_username:
+...

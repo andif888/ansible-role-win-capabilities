@@ -1,0 +1,14 @@
+---
+- hosts: "{{ node }}"
+  become: true
+
+  vars:
+    win_capability_delete_list:
+      - "Browser.InternetExplorer~~~~0.0.11.0"
+
+    win_capability_add_list:
+      - "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+      - "Rsat.Dns.Tools~~~~0.0.1.0"
+
+  roles:
+    - ansible-role-win-capabilites
